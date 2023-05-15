@@ -6,6 +6,7 @@
 //
 
 #import "AppDelegate.h"
+#import "Mesh.h"
 #import "Renderer.h"
 
 @implementation AppDelegate
@@ -25,12 +26,18 @@
                styleMask:NSWindowStyleMaskClosable|NSWindowStyleMaskTitled
                backing:NSBackingStoreBuffered
                defer:false];
+    //load data
+    NSArray<Mesh*> *photons;
+    NSString *filepath = @"/Users/robertvict/Documents/COMP440/MetalTest/MetalTestObjC/RenderPipeline/PhotonData/PhotonData.txt";
+    [Mesh parseData:photons FromFileLocation:filepath];
+    
     //setup renderer
     _view = [[MTKView alloc]
              initWithFrame:frame
              device:MTLCreateSystemDefaultDevice()];
     [_view setColorPixelFormat:MTLPixelFormatBGRA8Unorm_sRGB];
     [_view setClearColor: MTLClearColorMake(0.703, 0.812, 0.786, 1.0)];
+    
     _renderer = [[Renderer alloc] initWithMetalKitView: _view];
     [_view setDelegate: _renderer];
     //assign to window
