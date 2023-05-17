@@ -27,9 +27,8 @@
                backing:NSBackingStoreBuffered
                defer:false];
     //load data
-    NSArray<Mesh*> *photons;
     NSString *filepath = @"/Users/robertvict/Documents/COMP440/MetalTest/MetalTestObjC/RenderPipeline/PhotonData/PhotonData.txt";
-    [Mesh parseData:photons FromFileLocation:filepath];
+    NSArray *photons = [Mesh parseDataFromFileLocation:filepath];
     
     //setup renderer
     _view = [[MTKView alloc]
@@ -38,7 +37,7 @@
     [_view setColorPixelFormat:MTLPixelFormatBGRA8Unorm_sRGB];
     [_view setClearColor: MTLClearColorMake(0.703, 0.812, 0.786, 1.0)];
     
-    _renderer = [[Renderer alloc] initWithMetalKitView: _view];
+    _renderer = [[Renderer alloc] initWithMetalKitView: _view withMeshes:photons];
     [_view setDelegate: _renderer];
     //assign to window
     [_window setContentView: _view];

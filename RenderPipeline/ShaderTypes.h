@@ -10,7 +10,7 @@
 #define ShaderTypes_h
 
 typedef struct {
-    simd_float3 position;
+    MTLPackedFloat3 position;
 } Vertex;
 
 typedef struct {

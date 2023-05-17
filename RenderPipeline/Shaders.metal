@@ -26,7 +26,7 @@ struct VertexOutput {
 vertex VertexOutput vertexShader(VertexInput in [[ stage_in ]]
                                  )
 {
-    float4 coor_ndc = float4(in.position, 1.0);
+    float4 coor_ndc = float4(in.position[0], in.position[1], in.position[2], 1.0);
     //coor_ndc = uniforms.proj_mat * uniforms.view_mat * coor_ndc;
     
     VertexOutput out;

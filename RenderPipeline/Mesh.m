@@ -9,7 +9,6 @@
 
 @implementation Mesh
 {
-    Vertex *_vertices; //NSArray doesn't support structures so have to use this
     simd_float4x4 _world_pos;
     simd_float3 _colour;
 }
@@ -17,12 +16,13 @@
 -(nonnull instancetype) initFromStringData: (NSString*)string_data
 {
     NSArray<NSString*> *coordinates = [string_data componentsSeparatedByString:@", "];
-    _vertices = malloc(coordinates.count * sizeof(Vertex));
+    self.vertices = malloc(coordinates.count * sizeof(Vertex));
+    self.vertex_count = coordinates.count;
     
     for(int i = 0; i < coordinates.count; i++) {
         NSArray *coor = [coordinates[i] componentsSeparatedByString:@" "];
-        Vertex vertex = {simd_make_float3([coor[0] floatValue], [coor[1] floatValue], [coor[2] floatValue])};
-        _vertices[i] = vertex;
+        Vertex vertex = {MTLPackedFloat3Make([coor[0] floatValue], [coor[1] floatValue], [coor[2] floatValue])};
+        self.vertices[i] = vertex;
     }
     _world_pos = matrix_identity_float4x4;
     _colour = simd_make_float3(1.0, 0.0, 0.0);  //red for now
@@ -31,10 +31,10 @@
 }
 
 -(void) dealloc {
-    free(_vertices);
+    free(self.vertices);
 }
 
-+(void) parseData: (nonnull NSArray<Mesh*>*)meshes FromFileLocation: (nonnull NSString*)filepath; //load data from file
++(NSArray*) parseDataFromFileLocation: (nonnull NSString*)filepath; //load data from file
 {   NSError* error;
     NSString* file_contents;
     
@@ -44,12 +44,16 @@
     NSArray<NSString*> *photon_trajectories = [file_contents componentsSeparatedByString:@"\n"];
     NSMutableArray *mesh_accumulator = [NSMutableArray arrayWithCapacity:photon_trajectories.count];
     
+    NSLog(@"here");
+    
     for(int i = 0; i < photon_trajectories.count; i++) {
         Mesh *mesh = [[Mesh alloc] initFromStringData:photon_trajectories[i]];
         [mesh_accumulator insertObject:mesh atIndex:i];
     }
     
-    meshes = [NSArray arrayWithObjects:mesh_accumulator, nil];
+    NSArray *meshes = [NSArray arrayWithArray:mesh_accumulator];
+    return meshes;
 }
 
 @end
+    
