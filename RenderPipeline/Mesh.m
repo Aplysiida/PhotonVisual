@@ -44,8 +44,6 @@
     NSArray<NSString*> *photon_trajectories = [file_contents componentsSeparatedByString:@"\n"];
     NSMutableArray *mesh_accumulator = [NSMutableArray arrayWithCapacity:photon_trajectories.count];
     
-    NSLog(@"here");
-    
     for(int i = 0; i < photon_trajectories.count; i++) {
         Mesh *mesh = [[Mesh alloc] initFromStringData:photon_trajectories[i]];
         [mesh_accumulator insertObject:mesh atIndex:i];

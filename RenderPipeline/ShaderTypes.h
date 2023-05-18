@@ -14,9 +14,10 @@ typedef struct {
 } Vertex;
 
 typedef struct {
-    simd_float4x4 modelMat;
-    simd_float4x4 viewMat;
-    simd_float4x4 projectionMat;
+    simd_float4x4 ndcMat;
+    //simd_float4x4 projectionMat;
+    //simd_float4x4 viewMat;
+    //simd_float4x4 projectionMat;
 } Uniform;
 
 #endif /* DataTypes_h */

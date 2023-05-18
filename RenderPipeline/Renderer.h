@@ -12,6 +12,13 @@
 #import "Mesh.h"
 #import "ShaderTypes.h"
 
+//enums
+typedef enum {
+    Perspective,
+    Orthographic
+} Projections;
+
+
 @interface MeshGPU : NSObject
     //@property MTLVertexDescriptor *vert_desc;
     @property unsigned long vert_count;
@@ -20,6 +27,17 @@
 @end
 
 @interface Renderer : NSObject<MTKViewDelegate>
+
+@property Projections selected_projection;
+
 -(nonnull instancetype)initWithMetalKitView : (nonnull MTKView *)mtkView withMeshes:(nonnull NSArray<Mesh*>*)meshes;
--(void) initializeUniforms;
+
+-(simd_float4x4) makePerspectiveWithFOV: (float)fov_radians andAspectRatio: (float)aspect_ratio withNear: (float)near andFar: (float)far;
+-(simd_float4x4) makeOrthographic: (nonnull MTKView*)view withNear: (float)near andFar: (float)far;
+-(simd_float4x4) initializeNDCMatrix:(nonnull MTKView*) view withProjection: (Projections) selected_proj;
+-(void) initializeUniformBuffer: (nonnull MTKView*) view;
+
+-(void) updateView;
+
+-(MeshGPU*) loadMesh:(Mesh*) mesh;
 @end

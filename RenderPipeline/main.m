@@ -13,7 +13,7 @@
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
         NSApp = [NSApplication sharedApplication];
-        AppDelegate *AppDel = [[AppDelegate alloc] init];//iissue here
+        AppDelegate *AppDel = [[AppDelegate alloc] init];
         [NSApp setDelegate: AppDel];
         [NSApp run];
     }

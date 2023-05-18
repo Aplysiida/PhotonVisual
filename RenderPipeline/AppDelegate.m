@@ -23,7 +23,7 @@
     //setup window
     _window = [[NSWindow alloc]
                initWithContentRect:frame
-               styleMask:NSWindowStyleMaskClosable|NSWindowStyleMaskTitled
+               styleMask:NSWindowStyleMaskClosable|NSWindowStyleMaskTitled|NSWindowStyleMaskResizable
                backing:NSBackingStoreBuffered
                defer:false];
     //load data
