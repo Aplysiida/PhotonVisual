@@ -10,7 +10,7 @@
 #ifndef Camera_h
 #define Camera_h
 
-@interface Camera : NSObject
+@interface CameraController : NSObject
 
 -(nonnull instancetype) init;
 -(simd_float4x4) getCamTransformation;

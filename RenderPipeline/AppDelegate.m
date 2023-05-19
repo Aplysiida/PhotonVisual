@@ -8,13 +8,15 @@
 #import "AppDelegate.h"
 #import "Mesh.h"
 #import "Renderer.h"
+#import "ViewController.h"
 
 @implementation AppDelegate
 {
     //private var here
     NSWindow *_window;
-    MTKView* _view;
-    Renderer* _renderer;
+    ViewController *_view_controller;
+    //MTKView* _view;
+    //Renderer* _renderer;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
@@ -26,21 +28,13 @@
                styleMask:NSWindowStyleMaskClosable|NSWindowStyleMaskTitled|NSWindowStyleMaskResizable
                backing:NSBackingStoreBuffered
                defer:false];
-    //load data
-    NSString *filepath = @"/Users/robertvict/Documents/COMP440/MetalTest/MetalTestObjC/RenderPipeline/PhotonData/PhotonData.txt";
-    NSArray *photons = [Mesh parseDataFromFileLocation:filepath];
     
     //setup renderer
-    _view = [[MTKView alloc]
-             initWithFrame:frame
-             device:MTLCreateSystemDefaultDevice()];
-    [_view setColorPixelFormat:MTLPixelFormatBGRA8Unorm_sRGB];
-    [_view setClearColor: MTLClearColorMake(0.703, 0.812, 0.786, 1.0)];
+    _view_controller = [[ViewController alloc] initWithNibName:nil bundle:[NSBundle mainBundle]];
+    [_view_controller view];
     
-    _renderer = [[Renderer alloc] initWithMetalKitView: _view withMeshes:photons];
-    [_view setDelegate: _renderer];
     //assign to window
-    [_window setContentView: _view];
+    [_window setContentViewController: _view_controller];
     [_window setTitle:@"Metal Renderer"];
     [_window makeKeyAndOrderFront: nil];    //display window
 }

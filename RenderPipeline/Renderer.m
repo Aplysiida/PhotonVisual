@@ -14,6 +14,7 @@
 {
     //metal
     id<MTLDevice> _device;
+    MTKView *_view;
     id<MTLRenderPipelineState> _pipelineState;
     id<MTLCommandQueue> _commandQueue;
     
@@ -24,51 +25,53 @@
     MTLVertexDescriptor *_vertexDesc;
 }
 
-- (nonnull instancetype)initWithMetalKitView:(nonnull MTKView *)mtkView withMeshes:(nonnull NSArray<Mesh*>*)meshes
+- (nonnull instancetype)initWithMetalKitView:(nonnull MTKView *)view// withMeshes:(nonnull NSArray<Mesh*>*)meshes
 {
     self = [super init];
-    _selected_projection = Perspective; //default projectino
-    
-    if(self) {
-        NSError *error;
-        _device = mtkView.device;
-      
-        NSMutableArray<MeshGPU*> *meshes_accumulator = [NSMutableArray arrayWithCapacity:meshes.count];
-        //load data
-        for(int i = 0; i < meshes.count; i++) {
-            [meshes_accumulator insertObject:[self loadMesh:meshes[i]] atIndex:i];
-        }
-        meshes_data = [NSArray arrayWithArray:meshes_accumulator];
-        [self initializeUniformBuffer:mtkView];
-        
-        //setup vertex desc
-        _vertexDesc = [[MTLVertexDescriptor alloc] init];
-        _vertexDesc.attributes[0].format = MTLVertexFormatFloat3;
-        _vertexDesc.attributes[0].bufferIndex = 0;
-        _vertexDesc.attributes[0].offset = 0;
-        _vertexDesc.layouts[0].stride = sizeof(Vertex); //byte size 12
-        
-        //link shaders
-        id<MTLLibrary> shaderDefaultLibrary = [_device newDefaultLibrary];
-        id<MTLFunction> vertexShader = [shaderDefaultLibrary newFunctionWithName:@"vertexShader"];
-        id<MTLFunction> fragmentShader = [shaderDefaultLibrary newFunctionWithName:@"fragmentShader"];
-        
-        //setup PSO
-        MTLRenderPipelineDescriptor *pipelineStateDesc = [[MTLRenderPipelineDescriptor alloc] init];
-        pipelineStateDesc.label = @"Render Pipeline";
-        pipelineStateDesc.vertexFunction = vertexShader;
-        pipelineStateDesc.fragmentFunction = fragmentShader;
-        pipelineStateDesc.colorAttachments[0].pixelFormat = mtkView.colorPixelFormat;
-        pipelineStateDesc.vertexDescriptor = _vertexDesc;
-        
-        _pipelineState = [_device newRenderPipelineStateWithDescriptor:pipelineStateDesc error:&error];
-        NSAssert(_pipelineState, @"Failed to create pipeline state: %@", error);
-        
-        //create command queue
-        _commandQueue = [_device newCommandQueue];
+    if(self)
+    {
+        _device = view.device;
+        _view = view;
     }
-    
     return self;
+}
+
+-(void) loadMetalWithMeshes:(NSArray<Mesh *> *)meshes
+{
+    NSError *error;
+    NSMutableArray<MeshGPU*> *meshes_accumulator = [NSMutableArray arrayWithCapacity:meshes.count];
+    //load data
+    for(int i = 0; i < meshes.count; i++) {
+        [meshes_accumulator insertObject:[self loadMesh:meshes[i]] atIndex:i];
+    }
+    meshes_data = [NSArray arrayWithArray:meshes_accumulator];
+    [self initializeUniformBuffer:_view];
+        
+    //setup vertex desc
+    _vertexDesc = [[MTLVertexDescriptor alloc] init];
+    _vertexDesc.attributes[0].format = MTLVertexFormatFloat3;
+    _vertexDesc.attributes[0].bufferIndex = 0;
+    _vertexDesc.attributes[0].offset = 0;
+    _vertexDesc.layouts[0].stride = sizeof(Vertex); //byte size 12
+        
+    //link shaders
+    id<MTLLibrary> shaderDefaultLibrary = [_device newDefaultLibrary];
+    id<MTLFunction> vertexShader = [shaderDefaultLibrary newFunctionWithName:@"vertexShader"];
+    id<MTLFunction> fragmentShader = [shaderDefaultLibrary newFunctionWithName:@"fragmentShader"];
+        
+    //setup PSO
+    MTLRenderPipelineDescriptor *pipelineStateDesc = [[MTLRenderPipelineDescriptor alloc] init];
+    pipelineStateDesc.label = @"Render Pipeline";
+    pipelineStateDesc.vertexFunction = vertexShader;
+    pipelineStateDesc.fragmentFunction = fragmentShader;
+    pipelineStateDesc.colorAttachments[0].pixelFormat = _view.colorPixelFormat;
+    pipelineStateDesc.vertexDescriptor = _vertexDesc;
+    
+    _pipelineState = [_device newRenderPipelineStateWithDescriptor:pipelineStateDesc error:&error];
+    NSAssert(_pipelineState, @"Failed to create pipeline state: %@", error);
+    
+    //create command queue
+    _commandQueue = [_device newCommandQueue];
 }
 
 -(simd_float4x4) makePerspectiveWithFOV: (float)fov_radians andAspectRatio: (float)aspect_ratio withNear: (float)near andFar: (float)far {
@@ -147,12 +150,20 @@
     return mesh_gpu;
 }
 
-
-- (void)drawInMTKView:(MTKView *)view
+- (void)mtkView:(MTKView *)view drawableSizeWillChange:(CGSize)size
 {
-    //update uniforms here/add semaphore
-    [self updateView];
+    //update projection matrix
+    simd_float4x4 new_mat = [self initializeNDCMatrix:view withProjection:_selected_projection];
+    //memcpy(_ndcUniformBuffer.contents, &new_mat, sizeof(simd_float4x4));
     
+    [self drawToView:view];
+    //[self drawInMTKView:view];
+}
+
+-(void) drawToView:(MTKView *)view
+{
+    [self updateView];
+
     MTLRenderPassDescriptor *renderPassDescriptor = view.currentRenderPassDescriptor;
     if(renderPassDescriptor == nil) {   //can't draw if don't know render pass
         return;
@@ -179,15 +190,6 @@
     id<MTLDrawable> drawable = view.currentDrawable;
     [commandBuffer presentDrawable:drawable];
     [commandBuffer commit];
-}
-
-- (void)mtkView:(MTKView *)view drawableSizeWillChange:(CGSize)size
-{
-    //update projection matrix
-    simd_float4x4 new_mat = [self initializeNDCMatrix:view withProjection:_selected_projection];
-    //memcpy(_ndcUniformBuffer.contents, &new_mat, sizeof(simd_float4x4));
-    
-    [self drawInMTKView:view];
 }
 
 @end

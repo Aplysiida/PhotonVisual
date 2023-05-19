@@ -26,11 +26,13 @@ typedef enum {
     @property id<MTLBuffer> uniform_buffer;
 @end
 
-@interface Renderer : NSObject<MTKViewDelegate>
+@interface Renderer : NSObject
 
 @property Projections selected_projection;
 
--(nonnull instancetype)initWithMetalKitView : (nonnull MTKView *)mtkView withMeshes:(nonnull NSArray<Mesh*>*)meshes;
+-(nonnull instancetype)initWithMetalKitView : (nonnull MTKView *)view;
+//-(nonnull instancetype)initWithMetalKitView : (nonnull MTKView *)mtkView;// withMeshes:(nonnull NSArray<Mesh*>*)meshes;
+-(void) loadMetalWithMeshes:(nonnull NSArray<Mesh*>*) meshes;
 
 -(simd_float4x4) makePerspectiveWithFOV: (float)fov_radians andAspectRatio: (float)aspect_ratio withNear: (float)near andFar: (float)far;
 -(simd_float4x4) makeOrthographic: (nonnull MTKView*)view withNear: (float)near andFar: (float)far;
@@ -38,6 +40,8 @@ typedef enum {
 -(void) initializeUniformBuffer: (nonnull MTKView*) view;
 
 -(void) updateView;
+-(void) mtkView:(nonnull MTKView*)view drawableSizeWillChange:(CGSize)size;
+-(void) drawToView:(nonnull MTKView *) view;
 
 -(MeshGPU*) loadMesh:(Mesh*) mesh;
 @end
