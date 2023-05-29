@@ -21,7 +21,7 @@ vertex VertexOutput vertexShader(VertexInput in [[ stage_in ]],
                                  constant float4x4 &ndc_transform [[buffer(1)]])
 {
     VertexOutput out;
-    out.pos = ndc_transform * float4(in.position, 1.0);
+    out.pos = ndc_transform * float4(in.position, 1.0f);
     return out;
 }
 

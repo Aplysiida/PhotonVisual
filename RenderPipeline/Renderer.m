@@ -103,7 +103,7 @@
                        (simd_float4){0.0f, 0.0f, 0.0f, 1.0f});
 }
 
--(simd_float4x4) initializeNDCMatrix:(nonnull MTKView*) view withProjection: (Projections) selected_proj
+-(simd_float4x4) initializeNDCMatrix:(nonnull MTKView*) view withProjection: (Projections) selected_proj andView: (simd_float4x4) view_mat
 {
     simd_float4x4 proj_mat = matrix_identity_float4x4;
     switch(selected_proj) {
@@ -114,24 +114,23 @@
         default:    //orthographic
             proj_mat = [self makeOrthographic:view withNear:0.001f andFar:100.0f];
     };
-    simd_float4x4 view_mat = matrix_identity_float4x4;
     
     return matrix_multiply(proj_mat, view_mat);
 }
 
 -(void) initializeUniformBuffer: (MTKView*)view {
     //setup uniforms
-    simd_float4x4 ndc_mat = [self initializeNDCMatrix:view withProjection:_selected_projection];
+    simd_float4x4 ndc_mat = [self initializeNDCMatrix:view withProjection:_selected_projection andView:matrix_identity_float4x4];
     unsigned long buff_len = sizeof(simd_float4x4);
     //upload to uniform buffer
     _ndcUniformBuffer = [_device newBufferWithLength:buff_len options:MTLResourceStorageModeShared];
     memcpy(_ndcUniformBuffer.contents, &ndc_mat, buff_len);
 }
 
--(void)updateView
+-(void)updateView: (simd_float4x4) view_mat
 {
-    NSPoint mouse_loc = [NSEvent mouseLocation];
-    NSLog(@" mouse location = %f %f",mouse_loc.x, mouse_loc.y);
+    simd_float4x4 new_mat = [self initializeNDCMatrix:_view withProjection:_selected_projection andView:view_mat];
+    memcpy(_ndcUniformBuffer.contents, &new_mat, sizeof(simd_float4x4));
 }
 
 - (MeshGPU*)loadMesh:(Mesh*)mesh
@@ -153,17 +152,16 @@
 - (void)mtkView:(MTKView *)view drawableSizeWillChange:(CGSize)size
 {
     //update projection matrix
-    simd_float4x4 new_mat = [self initializeNDCMatrix:view withProjection:_selected_projection];
-    //memcpy(_ndcUniformBuffer.contents, &new_mat, sizeof(simd_float4x4));
+    if(_ndcUniformBuffer != NULL) {
+        simd_float4x4 ndc_mat = [self initializeNDCMatrix:view withProjection:_selected_projection andView:matrix_identity_float4x4];
+        memcpy(_ndcUniformBuffer.contents, &ndc_mat, sizeof(simd_float4x4));
+    }
     
     [self drawToView:view];
-    //[self drawInMTKView:view];
 }
 
 -(void) drawToView:(MTKView *)view
 {
-    [self updateView];
-
     MTLRenderPassDescriptor *renderPassDescriptor = view.currentRenderPassDescriptor;
     if(renderPassDescriptor == nil) {   //can't draw if don't know render pass
         return;

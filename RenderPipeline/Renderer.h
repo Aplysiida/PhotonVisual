@@ -36,10 +36,10 @@ typedef enum {
 
 -(simd_float4x4) makePerspectiveWithFOV: (float)fov_radians andAspectRatio: (float)aspect_ratio withNear: (float)near andFar: (float)far;
 -(simd_float4x4) makeOrthographic: (nonnull MTKView*)view withNear: (float)near andFar: (float)far;
--(simd_float4x4) initializeNDCMatrix:(nonnull MTKView*) view withProjection: (Projections) selected_proj;
+-(simd_float4x4) initializeNDCMatrix:(nonnull MTKView*) view withProjection: (Projections) selected_proj andView: (simd_float4x4) view_mat;
 -(void) initializeUniformBuffer: (nonnull MTKView*) view;
 
--(void) updateView;
+-(void) updateView: (simd_float4x4) view_mat;
 -(void) mtkView:(nonnull MTKView*)view drawableSizeWillChange:(CGSize)size;
 -(void) drawToView:(nonnull MTKView *) view;
 
