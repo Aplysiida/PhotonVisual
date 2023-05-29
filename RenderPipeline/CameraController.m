@@ -6,7 +6,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <SceneKit/SceneKit.h>
 #import "CameraController.h"
 
 @implementation CameraController {
