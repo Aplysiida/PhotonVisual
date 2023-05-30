@@ -25,7 +25,8 @@ vertex VertexOutput vertexShader(VertexInput in [[ stage_in ]],
     return out;
 }
 
-fragment float4 fragmentShader(VertexOutput in [[stage_in]])
+fragment float4 fragmentShader(VertexOutput in [[stage_in]],
+                               constant float3 &colour [[buffer(0)]])
 {
-    return float4(1.0,0.0,0.0,1.0);
+    return float4(colour,1.0);
 }

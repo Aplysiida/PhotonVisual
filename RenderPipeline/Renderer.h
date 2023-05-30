@@ -18,12 +18,21 @@ typedef enum {
     Orthographic
 } Projections;
 
+@interface BoundingBox : NSObject   //used for scene
+@property simd_float3 top_left;
+@property float width;
+@property float height;
+@property float depth;
+
+-(nonnull instancetype)initFromFilepath: (nonnull NSString*) filepath;
+-(simd_float3) getCentrePoint;
+@end
 
 @interface MeshGPU : NSObject
     //@property MTLVertexDescriptor *vert_desc;
     @property unsigned long vert_count;
     @property id<MTLBuffer> vert_buffer;
-    @property id<MTLBuffer> uniform_buffer;
+    @property id<MTLBuffer> colour_buffer;
 @end
 
 @interface Renderer : NSObject
