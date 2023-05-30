@@ -13,6 +13,7 @@
 @interface CameraController : NSObject
 
 @property float sensitivity;    //mouse sensitivity
+@property simd_float3 centre_point; //used for look at
 
 -(nonnull instancetype) init;
 +(float) toRadians:(float) value;

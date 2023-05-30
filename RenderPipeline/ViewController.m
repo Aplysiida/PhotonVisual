@@ -49,10 +49,15 @@
     
     //load data
     NSArray * args = [[NSProcessInfo processInfo] arguments];
-    NSString *filepath = args[1];   //get filepath as argument
-    NSArray *photons = [Mesh parseDataFromFileLocation:filepath];
+    NSString *photons_filepath = args[1];   //get filepath as argument
+    NSArray *photons = [Mesh parseDataFromFileLocation:photons_filepath];
     
     [_renderer loadMetalWithMeshes:photons];
+    
+    NSString *boundingbox_filepath = args[2];
+    BoundingBox *bb = [[BoundingBox alloc] initFromFilepath:boundingbox_filepath];
+   
+    _cam_controller.centre_point = [bb getCentrePoint];
     
     _view.delegate = self;
 }
@@ -68,7 +73,8 @@
     if(_update_view_mat) {
         //lookat;
         simd_float4x4 view = [CameraController calcLookFromEye:[_cam_controller getCamPos]
-                                                      AtCentre:simd_make_float3(0.0f)
+                                                        //AtCentre:simd_make_float3(0.0f, 1.0f, 0.0f)
+                                                        AtCentre:_cam_controller.centre_point
                                                         WithUp:simd_make_float3(0.0f, 1.0f, 0.0f)];
         [_renderer updateView: view];
         _update_view_mat = false;

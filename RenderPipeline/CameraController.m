@@ -25,7 +25,7 @@
     centre_pos = (simd_float3){0.0f, 0.0f, 0.0f};
     up_vec = (simd_float3){0.0f, 1.0f, 0.0f};
     
-    _radius = 2.0f;
+    _radius = 50.0f;
     _pitch = 0.0f;
     _yaw = 0.0f;
     return self;

@@ -18,6 +18,7 @@
 
 @property Vertex *vertices; //NSArray doesn't support structures so have to use this
 @property unsigned long vertex_count;
+@property MTLPackedFloat3 colour;
 
 -(nonnull instancetype) initFromStringData: (nonnull NSString*)string_data;
 -(void) dealloc;

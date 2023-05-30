@@ -7,6 +7,35 @@
 
 #import "Renderer.h"
 
+@implementation BoundingBox
+
+-(nonnull instancetype)initFromFilepath: (nonnull NSString*) filepath
+{
+    self = [super init];
+    NSError* error;
+    NSString* file_contents;
+    
+    file_contents = [NSString stringWithContentsOfFile:filepath encoding:NSASCIIStringEncoding error:&error];
+    NSAssert(file_contents, @"Failed to load file: %@", error);
+    NSArray<NSString*> *lines = [file_contents componentsSeparatedByString:@"\n"];
+    
+    //top left
+    NSArray<NSString*> *top_left_numbers = [lines[0] componentsSeparatedByString:@" "];
+    _top_left = simd_make_float3([top_left_numbers[0] floatValue], [top_left_numbers[1] floatValue], [top_left_numbers[2] floatValue]);
+    //dimensions
+    _width = [lines[1] floatValue];
+    _height = [lines[2] floatValue];
+    _depth = [lines[3] floatValue];
+    return self;
+}
+
+-(simd_float3)getCentrePoint
+{
+    return simd_make_float3(_top_left.x - _width/2.0f, _top_left.y - _height/2.0f, _top_left.z - _depth/2.0f);
+}
+
+@end
+
 @implementation MeshGPU
 @end
 
@@ -36,7 +65,7 @@
     return self;
 }
 
--(void) loadMetalWithMeshes:(NSArray<Mesh *> *)meshes
+-(void) loadMetalWithMeshes:(NSArray<Mesh *> *)meshes 
 {
     NSError *error;
     NSMutableArray<MeshGPU*> *meshes_accumulator = [NSMutableArray arrayWithCapacity:meshes.count];
@@ -141,11 +170,16 @@
     id<MTLBuffer> vertexBuffer = [_device newBufferWithLength:vert_buff_len options:MTLResourceStorageModeShared];
     memcpy(vertexBuffer.contents, mesh.vertices, vert_buff_len);
     
-    //define uniform buffer for colour/world mat
+    //create and upload buffer for colour
+    MTLPackedFloat3 colour = mesh.colour;
+    unsigned long colour_buff_len = sizeof(colour) + 4; //size of MTLPackedFloat3 but due to stride needs to be rounded up to 16
+    id<MTLBuffer> colourBuffer = [_device newBufferWithLength:colour_buff_len options:MTLResourceStorageModeShared];
+    memcpy(colourBuffer.contents, &colour, colour_buff_len);
     
     MeshGPU *mesh_gpu = [[MeshGPU alloc] init];
     mesh_gpu.vert_count = vert_count;
     mesh_gpu.vert_buffer = vertexBuffer;
+    mesh_gpu.colour_buffer = colourBuffer;
     return mesh_gpu;
 }
 
@@ -178,6 +212,7 @@
     //draw each mesh
     for(MeshGPU *mesh in meshes_data) {
         [commandEncoder setVertexBuffer:mesh.vert_buffer offset:0 atIndex:0];
+        [commandEncoder setFragmentBuffer:mesh.colour_buffer offset:0 atIndex:0];
         [commandEncoder drawPrimitives:MTLPrimitiveTypeLineStrip vertexStart:0 vertexCount:mesh.vert_count];
     }
     
