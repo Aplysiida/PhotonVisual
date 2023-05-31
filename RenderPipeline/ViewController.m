@@ -73,7 +73,6 @@
     if(_update_view_mat) {
         //lookat;
         simd_float4x4 view = [CameraController calcLookFromEye:[_cam_controller getCamPos]
-                                                        //AtCentre:simd_make_float3(0.0f, 1.0f, 0.0f)
                                                         AtCentre:_cam_controller.centre_point
                                                         WithUp:simd_make_float3(0.0f, 1.0f, 0.0f)];
         [_renderer updateView: view];
@@ -86,6 +85,13 @@
 -(bool) becomeFirstResponder
 {
     return true;
+}
+
+-(void)scrollWheel:(NSEvent *)event
+{
+    _update_view_mat = true;
+    float new_radius = _cam_controller.radius + event.scrollingDeltaY;
+    _cam_controller.radius = (new_radius > 0.1f) ? new_radius : 0.1f;
 }
 
 -(void)mouseDragged:(NSEvent *)event

@@ -1,6 +1,6 @@
 #ignoring Xcode project
-RenderPipeline.xcodeproj/
 .DS_Store
+PhotonVisual.xcodeproj/
 PhotonData/.DS_Store
 
 #ignore PhotonData and BoundingBox, these are generated through swift

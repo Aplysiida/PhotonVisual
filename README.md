@@ -22,3 +22,11 @@ The structure of the ```BoundingBox.txt``` is:
 Main function found in ```main.m``` with the arguments needed being:
 - a = file path to PhotonData.txt
 - b = file path to BoundingBox.txt
+
+## Setup Project in XCode
+1. Clone the project from the git repo ```https://github.com/Aplysiida/PhotonVisual.git```
+2. Create an empty XCode project at the repo's location.
+3. Open Xcode then do the following:
+    1. Add all files in ```/RenderPipeline``` folder
+    2. Add all files in ```/RenderPipeline``` to Compile Sources. Make sure it's only the ```.m, .h ``` and ```.metal``` files.
+    3. In Xcode bar go to ```Product/Scheme/Edit Scheme...``` and add the two arguments needed for Render Pipeline.

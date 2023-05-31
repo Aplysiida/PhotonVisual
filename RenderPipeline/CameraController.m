@@ -11,7 +11,6 @@
 @implementation CameraController {
     //used to rotate camera around a point
     //based on sphere polar angles
-    float _radius;
     float _pitch;
     float _yaw;
     //used for look at
