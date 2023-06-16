@@ -4,11 +4,11 @@
 Compiling from ```project folder/PhotonData```: 
 ```swiftc -o GenerateTrajectories GenerateTrajectories.swift```
 Running script and its parameters:
-```./GenerateTrajectories a b c```
+```./GenerateTrajectories a b```
 Where 
 - a = number of photons to generate
 - b = number of points in each photon's trajectory
-- c = rng seed
+
 The script will write to PhotonData.txt.
 ### Bounding Box Structure
 The bounding box is used to generate the photon trajectories and for the render pipeline to know where to centre the camera.

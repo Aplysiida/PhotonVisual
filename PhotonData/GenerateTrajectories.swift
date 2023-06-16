@@ -21,6 +21,8 @@ let seed = 101
 var rng = RNGWithSeed(seed: seed)
 let alpha_rand: Float = 0.5    //used to vary x and y in photon trajectory
 
+var count = 0
+
 struct BoundingBox {
     var top_left: SIMD3<Float> = SIMD3<Float>(0.0, 0.0, 0.0)
     var width: Float = 1.0
@@ -35,7 +37,11 @@ let bounding_box_info = BoundingBox()
  */
 func GenerateTrajectory(_ trajectory_size: Int) -> [SIMD3<Float>] {
     let rand_float = {(min: Float, max: Float) -> Float in return Float.random(in: min...max, using: &rng)}
-    
+  
+    if(count % 1000 == 0) {
+        print("Writing traj \(count)")
+    }
+    count += 1
     //let photon_trajectory: [SIMD3<Float>] = (0..<trajectory_size).map { _ in SIMD3<Float>.random(in: 1...20, using: &rng) }
     var photon_trajectory: [SIMD3<Float>] = (0..<trajectory_size).map { _ in SIMD3<Float>(0.0, 0.0, 0.0)}
     //first point, generate at any xy position at beginning
@@ -58,8 +64,23 @@ func GenerateTrajectory(_ trajectory_size: Int) -> [SIMD3<Float>] {
 /*
  Generate list of photons, all of which have the same trajectory size
  */
-func GeneratePhotons(_ photon_num: Int, _ trajectory_size: Int, _ photons: inout[[SIMD3<Float>]]) {
-    photons = (0..<photon_num).map {_ in GenerateTrajectory(trajectory_size)}
+func GeneratePhotonsandWrite(_ photon_num: Int, _ trajectory_size: Int, _ photons: inout[[SIMD3<Float>]]) {
+    let file_mgr = FileManager.default
+    let filepath = URL(fileURLWithPath: file_mgr.currentDirectoryPath+"/PhotonData"+String(photon_num)+"_"+String(trajectory_num)+".txt")
+    if !file_mgr.fileExists(atPath: (filepath.path)) {
+        file_mgr.createFile(atPath: (filepath.path), contents: "".data(using: .ascii), attributes: nil)
+    }
+    print("Writing to \(filepath.path)")
+    let fileHandle = FileHandle(forWritingAtPath: filepath.path)
+        for _ in 0...photon_num {
+            let traj = GenerateTrajectory(trajectory_size)
+            let traj_string = traj.reduce("", {prev, curr in prev + "\(curr.x) \(curr.y) \(curr.z), "}).dropLast().dropLast() + "\n" //two droplast to get rid of the ", "
+            fileHandle?.seekToEndOfFile()
+            fileHandle?.write(traj_string.data(using: .ascii)!)
+        }
+        fileHandle?.closeFile()
+    
+    //photons = (0..<photon_num).map {_ in GenerateTrajectory(trajectory_size)}
 }
 
 func WritePhotonsToFile(_ photons: inout[[SIMD3<Float>]]) {
@@ -72,7 +93,7 @@ func WritePhotonsToFile(_ photons: inout[[SIMD3<Float>]]) {
         }).dropLast().dropLast() + "\n" //two droplast to get rid of the ", "
     })
     //write to file PhotonData.txt at directory where program is run
-    let filepath = URL(fileURLWithPath: FileManager.default.currentDirectoryPath+"/PhotonData.txt")
+    let filepath = URL(fileURLWithPath: FileManager.default.currentDirectoryPath+"/PhotonData"+String(photon_num)+"_"+String(trajectory_num)+".txt")
     print("Writing to \(filepath)")
     do{
         try photons_string.write(to: filepath, atomically: true, encoding: .ascii)
@@ -101,5 +122,5 @@ let photon_num: Int = Int(args[1]) ?? 0
 let trajectory_num: Int = Int(args[2]) ?? 0
 var photons = [[SIMD3<Float>]]()
 
-GeneratePhotons(photon_num, trajectory_num, &photons)
-WritePhotonsToFile(&photons)
+GeneratePhotonsandWrite(photon_num, trajectory_num, &photons)
+print("Finished generating photons")
